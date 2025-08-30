@@ -1,0 +1,9 @@
+# hexo robots.txt
+User-agent: *
+
+Allow: /
+Disallow: /js/
+Disallow: /css/
+Disallow: /img/
+Sitemap: https://jelon.xyz/sitemap.xml
+Sitemap: https://jelon.xyz/baidusitemap.xml
