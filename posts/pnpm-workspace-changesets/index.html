@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" >
+    <meta http-equiv="X-UA-Compatible" content="IE=11,IE=10,IE=9,IE=8" >
+    <meta name="baidu-site-verification" content="dIcXMeY8Ya" />
+    
+    <title>为什么使用 pnpm + workspace + changesets 替代 yarn + lerna 构建我们组件库 | Jelon</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" >
+    <meta name="keywords" content="Jelon, 前端, Web, 张德龙, 前端开发" >
+    <meta name="description" content="Jelon个人前端小站" >
+
+    
+    <link rel="alternative" href="/atom.xml" title="Jelon" type="application/atom+xml" >
+    
+    
+    <link rel="icon" href="/favicon.ico" >
+    
+
+    
+    <link rel="apple-touch-icon" href="/favicon.png" >
+    
+    
+<link rel="stylesheet" href="/css/style.css?v=1765082964741.css">
+
+    <!--[if lt IE 9]>
+    
+<script src="/js/html5.js"></script>
+
+    <![endif]-->
+    
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src="https://hm.baidu.com/hm.js?944bc43c86d1058e06f95214cde1f8a6"
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="home">
+    <!--[if lt IE 9]>
+    <div class="browsehappy">
+        当前网页 <strong>不支持</strong>
+        你正在使用的浏览器. 为了正常的访问, 请 <a target="_blank" rel="noopener" href="http://browsehappy.com/">升级你的浏览器</a>.
+    </div>
+    <![endif]-->
+
+    <!-- 博客头部 -->
+    <header class="header">
+    <section class="container header-main">
+        <div class="logo">
+            <a href="/">
+                <div class="cover">
+                    <span class="name">JELON</span>
+                    <span class="description">个人博客小站</span>
+                </div>
+            </a>
+        </div>
+        <div class="dropnav iconfont icon-nav" id="JELON__btnDropNav"></div>
+        <ul class="menu hidden" id="JELON__menu">
+            
+            <li rel="/posts/pnpm-workspace-changesets/index.html" class="item ">
+                <a href="/" title="首页" class="iconfont icon-home">&nbsp;首页</a>
+            </li>
+            
+            <li rel="/posts/pnpm-workspace-changesets/index.html" class="item ">
+                <a href="/archives/" title="归档" class="iconfont icon-archives">&nbsp;归档</a>
+            </li>
+            
+            <li rel="/posts/pnpm-workspace-changesets/index.html" class="item ">
+                <a href="/about/" title="关于" class="iconfont icon-staff">&nbsp;关于</a>
+            </li>
+            
+            <li rel="/posts/pnpm-workspace-changesets/index.html" class="item ">
+                <a href="/comment/" title="留言" class="iconfont icon-comment">&nbsp;留言</a>
+            </li>
+            
+        </ul>
+        <div class="profile clearfix">
+            <div class="feeds fl">
+                
+                
+                <p class="links">
+                    
+                        <a href="https://github.com/jangdelong" target="_blank">Github</a>
+                        |
+                    
+                        <a href="https://app.netlify.com" target="_blank">Hosted by Netlify</a>
+                        
+                    
+                </p>
+                <p class="sns">
+                    
+                        <a href="http://weibo.com/jangdelong" class="sinaweibo" target="_blank"><b>■</b> 新浪微博</a>
+                    
+                        <a href="https://v.douyin.com/Ae2KxPd/" class="qqweibo" target="_blank"><b>■</b> 抖音</a>
+                    
+                    <a href="javascript: void(0);" class="wechat">
+                        <b>■</b>
+                        公众号
+                        <span class="popover">
+                            <img src="/img/wechat_mp.jpg" width="120" height="120" alt="我的微信订阅号">
+                            <i class="arrow"></i>
+                        </span>
+                    </a>
+                </p>
+                
+            </div>
+            <div class="avatar fr">
+                <img src="/img/jelon.jpg" alt="avatar" title="Jelon" >
+            </div>
+        </div>
+    </section>
+</header>
+
+
+    <!-- 博客正文 -->
+    <div class="container body clearfix">
+        <section class="content">
+            <div class="content-main widget">
+                <!-- 文章页 -->
+<!-- 文章 -->
+<article class="post article">
+    <header class="text-center">
+        <h3 class="post-title"><span>为什么使用 pnpm + workspace + changesets 替代 yarn + lerna 构建我们组件库</span></h3>
+    </header>
+    <p class="post-meta text-center">
+        Jelon 发表于
+        <time datetime="2025-03-15T00:22:48.000Z">2025-03-15</time>
+    </p>
+    <div id="JELON__articlePostContent" class="post-content">
+        <div class="toc">
+
+<!-- toc -->
+
+<ul>
+<li><a href="#%E4%B8%80-%E8%83%8C%E6%99%AF">一、背景</a></li>
+<li><a href="#%E4%BA%8C-%E4%BB%80%E4%B9%88%E6%98%AF-pnpm">二、什么是 pnpm ？</a></li>
+<li><a href="#%E4%B8%89-pnpm-%E5%AF%B9%E6%AF%94-npmyarn-%E6%9C%89%E4%BB%80%E4%B9%88%E4%BC%98%E5%8A%BF">三、pnpm 对比 npm&#x2F;yarn 有什么优势？</a></li>
+<li><a href="#%E5%9B%9B-%E4%BB%80%E4%B9%88%E6%98%AF-changesets">四、什么是 changesets ？</a></li>
+<li><a href="#%E4%BA%94-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E4%BD%BF%E7%94%A8-changesets">五、为什么要使用 changesets ？</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+<!-- tocstop -->
+
+</div>
+
+<h2><span id="一-背景">一、背景</span></h2><p>最近公司私服开启鉴权，对于前端来说，带来一些非常重要的影响和变化：</p>
+<ol>
+<li>不管拉取 npm 包还是发布 npm 包，均需要鉴权，具体就是 .npmrc 配置信息需要增加 auth token 信息；</li>
+<li>使用 yarn 出现偶然下载包失败问题以及必现的无法发包问题，而 npm 和 pnpm 可以；</li>
+<li>现有组件库工程（所使用的工具链为 yarn + lerna）发包时会出现 401 鉴权问题，甚至有时连安装依赖包也有问题。</li>
+</ol>
+<p>基于以上三个问题，我们做了一些尝试：</p>
+<ol>
+<li>将 yarn 从 1.x 升级到 2.x，也就是说 yarn 2.x + lerna，不行；❌</li>
+<li>将 yarn 改成 pnpm，使用 pnpm + lerna 组合，也出现了一些问题；❌</li>
+<li>将 yarn + lerna 组合改成 pnpm + workspace + [pnpm publish]，成功。✅</li>
+</ol>
+<p>最后，我们决定彻底地将 yarn + lerna 组合切换成 pnpm + workspace + changesets 。</p>
+<h2><span id="二-什么是-pnpm">二、什么是 pnpm ？</span></h2><p>pnpm 是新一代的包管理工具，是目前较为先进的包管理器。按照官网说法，可以实现节约磁盘空间并提升安装速度和创建非扁平化的 node_modules 文件夹两大目标，具体原理可以参考 pnpm 官网。</p>
+<p>以下是官方给的一张关于 pnpm 的原理图：</p>
+<p><img src="https://jangdelong.github.io/blog_img/images/pnpm-workspace-changesets/1.png" alt="pnpm 原理图"></p>
+<p>所以，综合上图，我就现在知道 pnpm 为什么说是先进的包管理器了吧。</p>
+<p>首先，最大的优点是节省磁盘空间，一个包全局只保存一份，剩下的都是软硬连接，这必然节省不少磁盘空间，并且使用软链接的方式创建非扁平的 node_modules 嵌套关系。</p>
+<p>其次就是快，因为通过链接的方式而不是复制，自然会快。</p>
+<h2><span id="三-pnpm-对比-npmx2fyarn-有什么优势">三、pnpm 对比 npm&#x2F;yarn 有什么优势？</span></h2><ol>
+<li>速度快</li>
+</ol>
+<p>pnpm 安装包的速度究竟有多快？先以 React 包为例来对比一下:</p>
+<p><img src="https://jangdelong.github.io/blog_img/images/pnpm-workspace-changesets/2.webp" alt="pnpm 原理图"></p>
+<p>可以看到，作为黄色部分的 pnpm，在绝多大数场景下，包安装的速度都是明显优于 npm&#x2F;yarn，速度会比 npm&#x2F;yarn 快 2-3 倍。</p>
+<p>对 yarn 比较熟悉的同学可能会说，yarn 不是有 PnP 安装模式吗？直接去掉 node_modules，将依赖包内容写在磁盘，节省了 node 文件 I&#x2F;O 的开销，这样也能提升安装速度。</p>
+<p>接下来，我们以这样一个仓库为例，我们来看一看 benchmark 数据，主要对比一下 pnpm 和 yarn PnP:</p>
+<p><img src="https://jangdelong.github.io/blog_img/images/pnpm-workspace-changesets/3.webp" alt="pnpm 原理图"></p>
+<p>从中可以看到，总体而言，pnpm 的包安装速度还是明显优于 yarn PnP 的。</p>
+<ol start="2">
+<li>高效利用磁盘空间</li>
+</ol>
+<p>pnpm 内部使用基于内容寻址的文件系统来存储磁盘上所有的文件，这个文件系统出色的地方在于:</p>
+<ul>
+<li>不会重复安装同一个包。用 npm&#x2F;yarn 的时候，如果 100 个项目都依赖 lodash，那么 lodash 很可能就被安装了 100 次，磁盘中就有 100 个地方写入了这部分代码。但在使用 pnpm 只会安装一次，磁盘中只有一个地方写入，后面再次使用都会直接使用 hardlink（硬链接）。</li>
+<li>即使一个包的不同版本，pnpm 也会极大程度地复用之前版本的代码。举个例子，比如 lodash 有 100 个文件，更新版本之后多了一个文件，那么磁盘当中并不会重新写入 101 个文件，而是保留原来的 100 个文件的 hardlink，仅仅写入那一个新增的文件。</li>
+</ul>
+<ol start="3">
+<li>支持 monorepo</li>
+</ol>
+<p>随着前端工程的日益复杂，越来越多的项目开始使用 monorepo。之前对于多个项目的管理，我们一般都是使用多个 git 仓库，但 monorepo 的宗旨就是用一个 git 仓库来管理多个子项目，所有的子项目都存放在根目录的 packages 目录下，那么一个子项目就代表一个 package。</p>
+<p>pnpm 与 npm&#x2F;yarn 另外一个很大的不同就是支持了 monorepo，体现在各个子命令的功能上，比如在根目录下 <code>pnpm add A -r</code>, 那么所有的 package 中都会被添加 A 这个依赖，当然也支持 <code>--filter</code> 字段来对 package 进行过滤。</p>
+<p>pnpm 通过 pnpm-workspace.yaml 配置定义工作空间目录，并能够使您从工作空间中包含 &#x2F; 排除目录。</p>
+<ol start="4">
+<li>安全性高</li>
+</ol>
+<p>之前在使用 npm&#x2F;yarn 的时候，由于 node_modules 的扁平结构，如果 A 依赖 B， B 依赖 C，那么 A 当中是可以直接使用 C 的，但问题是 A 当中并没有声明 C 这个依赖。因此会出现这种非法访问的情况。但 pnpm 脑洞特别大，自创了一套依赖管理方式，很好地解决了这个问题，保证了安全性，具体怎么体现安全、规避非法访问依赖的风险的，主要表现为幽灵依赖。</p>
+<p>小结</p>
+<p>总而言之，pnpm 与 npm&#x2F;yarn 比较，可以通过以下表格总结出来。</p>
+<p><img src="https://jangdelong.github.io/blog_img/images/pnpm-workspace-changesets/4.png" alt="pnpm 原理图"></p>
+<h2><span id="四-什么是-changesets">四、什么是 changesets ？</span></h2><p>在 workspace 中对包版本管理是一个非常复杂的工作，原来 yarn 还可以使用 lerna，遗憾的是 pnpm 没有提供内置的解决方案，一部分开源项目在自己的项目中自己实现了一套包版本的管理机制，比如 Vue3、Vite等。</p>
+<p>pnpm 推荐了两个开源的版本控制工具：</p>
+<ul>
+<li>changesets</li>
+<li>rush</li>
+</ul>
+<p>这里我们采用了 changesets 来做依赖包的管理。选用 changesets 的主要原因还是文档更加清晰一些，感觉上手比较容易。</p>
+<p>按照 changesets 文档介绍的，changesets 主要是做了两件事：</p>
+<blockquote>
+<p>Changesets hold two key bits of information: a version type (following semver), and change information to be added to a changelog.</p>
+</blockquote>
+<p>简而言之就是管理包的 version 和生成 changelog。</p>
+<h2><span id="五-为什么要使用-changesets">五、为什么要使用 changesets ？</span></h2><p>1. lerna 发包方案缺陷</p>
+<p>早期我们的组件库版本中采用了 lerna 这一套的发包方案，但随着频繁的使用和深入的研究发现，这套方案随之带来了不少问题：</p>
+<ul>
+<li>ignoreChanges 不能做到文件的完全忽略，存在优先级问题；</li>
+<li>lerna version 根据 commit 以及 tag 更新出来的包版本不符合预期；</li>
+<li>生成的 CHANGELOG 文件信息不完整；</li>
+<li>lifecycle scripts 经常命中一些用户自定义的 script（例如 publish 等）；</li>
+<li>CI 中自动化发包场景需要很高的定制成本；</li>
+<li>lerna 本身不支持 workspace 协议，导致基于 pnpm 开发的一些仓库无法使用。</li>
+</ul>
+<p>2. changesets 的基本工作流程及优势</p>
+<p>Changesets 提供了简单、轻量的版本控制和发布方案，其工作流原理如下。</p>
+<p><img src="https://jangdelong.github.io/blog_img/images/pnpm-workspace-changesets/5.webp" alt="pnpm 原理图"></p>
+<p>整个流程可以理解为四部曲：</p>
+<p>第一步，<code>changeset init</code>。通过执行执行该命令，可以在项目根目录下生成一个 <code>.changeset</code> 目录，里面会生成一个 changesets 的 config 文件，一般项目初始化时，执行一遍即可，后续不用再执行该操作。</p>
+<p>第二步，<code>changeset add</code> 或者 <code>changeset</code>。<code>add</code> 在 changesets 中算得上比较关键的命令之一了，它会根据 monorepo下的项目来生成一个 changeset 文件，里面会包含前面提到的 changeset 文件信息(更新包名称、版本层级、CHANGELOG 信息。</p>
+<p>第三步，<code>changeset version</code>。 这个命令这里可以当作 <code>Bump Version</code>（版本号升级或更新操作）来理解，这里本质上做的工作是消耗 changesets 文件并且修改对应包版本以及依赖该包的包版本，同时会根据之前 changeset 文件里面的信息来生成对应的 CHANGELOG 信息。</p>
+<p>第四步，<code>changeset publish</code>。本质上就是对 <code>npm publish</code> 做了一次封装，同时会检查对应的 registry 上有没有对应包的版本，如果已经存在了，就不会再发包了，如果不存在会对对应的包版本执行一次 <code>npm publish</code>。</p>
+<p>另外，changesets 支持 <code>pre 版本</code> 和 <code>非 pre 版本</code> 的操作切换，需要在第二步之前执行 <code>changeset pre enter</code>、<code>changeset pre exit</code> 等操作。</p>
+<p>小结</p>
+<p>总而言之，主要优点在于提供了很大的自主权在使用者手中，在复杂的业务场景下能够做出一些合适的调整，例如用户可以自行修改 changesets 文件、changelog 文件、甚至是 Bump Version 后不满意的版本。</p>
+<p>相比较于 lerna 提供的比较理想化的方案而言，changeset 本身是一套泛用性很强的方案，而且比较适合当下 monorepo 工作流场景下的一些运作方式，虽然本身还存在着不少的缺点 。</p>
+<h2><span id="总结">总结</span></h2><p>综上所述，为什么使用 pnpm + workspace + changesets 替代 yarn + lerna 构建我们组件库，可以总结为以下几个点。</p>
+<ol>
+<li>使用 pnpm 解决私服开启鉴权带来的一些非常重要的影响和变化；</li>
+<li>充分利用 pnpm 不可替代的速度快、高效利用磁盘空间、天然支持 monorepo（支持 workspace 配置）、 安全性高（比如解决幽灵依赖问题、node_modules 嵌套过深问题）等优势；</li>
+<li>changesets 带来更加简单、更加轻量的版本控制和发布方案，使得版本管理及发布流程更多的自主权掌握在使用者手中。</li>
+</ol>
+
+    </div>
+    <p class="eof">-- EOF --</p>
+    <p class="post-meta">
+        <span class="post-cat">分类：
+            <a class="cat-link" href="/categories/Web%E6%8A%80%E6%9C%AF/">Web技术</a>
+        </span>
+        <span class="post-tags">
+            标签：
+            
+    
+        <a href="/tags/pnpm/" title="pnpm">pnpm</a> / 
+    
+        <a href="/tags/monorepo/" title="monorepo">monorepo</a> / 
+    
+        <a href="/tags/changesets/" title="changesets">changesets</a>
+    
+
+        </span>
+    </p>
+</article>
+<!-- 分享按钮 -->
+
+  <div class="article-share clearfix text-center">
+    <div class="share-area">
+      <span class="share-txt">分享到：</span>
+      <a href="javascript: window.open('http://service.weibo.com/share/share.php?url=' + encodeURIComponent(location.href) + '&title=' + document.title + '&language=zh_cn');" class="share-icon weibo"></a>
+      <a href="javascript: alert('请复制链接到微信并发送');" class="share-icon wechat"></a>
+      <a href="javascript: window.open('http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=' + encodeURIComponent(location.href) + '&title=' + document.title);" class="share-icon qqzone"></a>
+      <a href="javascript: window.open('http://connect.qq.com/widget/shareqq/index.html?url=' + encodeURIComponent(location.href) + '&desc=Jelon个人博客&title=' + document.title + '&callback=' + encodeURIComponent(location.href));" class="share-icon qq"></a>
+      <a href="javascript: window.open('http://shuo.douban.com/!service/share?href=' + encodeURIComponent(location.href) + '&name=' + document.title + '&text=' + document.title);" class="share-icon douban"></a>
+    </div>
+  </div>
+
+
+<!-- 上一篇/下一篇 -->
+
+<div class="article-nav clearfix">
+    
+    <span class="prev fl">
+        上一篇<br >
+        <a href="/posts/basic-of-react/index/">
+            
+                React 核心原理与实现机制详解
+            
+        </a>
+    </span>
+    
+
+    
+    <span class="next fr">
+        下一篇<br >
+        <a href="/posts/node-multi-process/">
+            
+                Node.js多线程
+            
+        </a>
+    </span>
+    
+</div>
+
+<!-- 文章评论 -->
+
+  
+<script src="/js/comment.js?v=1765082964448.js"></script>
+
+  <div id="comments" class="comment">
+    <!--
+    <div class="sign-bar">
+      GitHub 已登录!
+      <span class="sign-link">登出</span>
+    </div>
+    <section class="box">
+      <div class="com-avatar"><img src="/img/jelon.jpg" alt="avatar"></div>
+      <div class="com-text">
+        <div class="main">
+          <textarea class="text-area-edited show" placeholder="欢迎评论！"></textarea>
+          <div class="text-area-preview"></div>
+        </div>
+        <div class="switch">
+          <div class="switch-item on">编辑</div>
+          <div class="switch-item">预览</div>
+        </div>
+        <div class="button">提交</div>
+      </div>
+    </section>
+    <section class="tips">注：评论支持 markdown 语法！</section>
+    <section class="list-wrap">
+      <ul class="list">
+        <li>
+          <div class="user-avatar">
+            <a href="/">
+              <img src="/img/jelon.jpg" alt="user-avatar">
+            </a>
+          </div>
+          <div class="user-comment">
+            <div class="user-comment-header">
+              <span class="post-name">张德龙</span>
+              <span class="post-time">2017年12月12日</span>
+              <span class="like liked">已赞</span>
+              <span class="like-num">2</span>
+            </div>
+            <div class="user-comment-body">333333</div>
+          </div>
+        </li>
+        <li>
+          <div class="user-avatar">
+            <a href="/">
+              <img src="/img/jelon.jpg" alt="user-avatar">
+            </a>
+          </div>
+          <div class="user-comment">
+            <div class="user-comment-header">
+              <span class="post-name">刘德华</span>
+              <span class="post-time">2017年12月12日</span>
+              <span class="like">点赞</span>
+              <span class="like-num">2</span>
+            </div>
+            <div class="user-comment-body">vvvvv</div>
+          </div>
+        </li>
+      </ul>
+      <div class="page-nav">
+        <a href="javascript: void(0);" class="item">1</a>
+        <a href="javascript: void(0);" class="item">2</a>
+        <a href="javascript: void(0);" class="item current">3</a>
+      </div>
+    </section>
+    -->
+  </div>
+  <script>
+  JELON.Comment({
+    container: 'comments',
+    label: 'pnpm-workspace-changesets' || 'posts/pnpm-workspace-changesets/',
+    owner: 'jangdelong',
+    repo: 'blog_comments',
+    clientId: 'b08ed25e52c57993e69c',
+    clientSecret: 'd18eaf1eb957ba610f01ddf95d732dd9d94b770c'
+  });
+  </script>
+
+
+
+            </div>
+        </section>
+        <!-- 侧栏部分 -->
+<aside class="sidebar">
+    
+    <section class="widget">
+        <h3 class="widget-hd"><strong>文章搜索</strong></h3>
+        <div class="search-form">
+  <form
+    id="searchForm"
+    method="GET"
+    action="https://www.baidu.com/s"
+    ectype="application/x-www-form-urlencoded"
+    target="_blank"
+    autocomplete="false"
+    onsubmit="javascript: return false;">
+    <input
+      id="searchKeyword"
+      type="text"
+      class="form-control"
+      placeholder="输入关键字搜索"
+      autocomplete="off"
+    />
+    <input id="searchKeywordHidden" type="hidden" name="wd" />
+    <input id="searchButton" class="btn" type="submit" value="搜索" />
+  </form>
+  <div id="searchResultBox" class="search-result-box">
+    <header class="search-result-head">搜索结果 <span class="search-result-total" id="searchResultTotal"></span></header>
+    <div class="search-result-main">
+      <ul id="searchResultList" class="search-result-list">
+        <!--
+        <li class="search-result-item">
+          <a href="#" class="search-result-item-title">这是搜索结果标题</a>
+          <p class="search-result-item-desc">这是搜索结果详情</p>
+        </li>
+        -->
+      </ul>
+    </div>
+  </div>
+</div>
+    </section>
+    
+
+    <section class="widget">
+        <h3 class="widget-hd"><strong>文章分类</strong></h3>
+        <!-- 文章分类 -->
+<ul class="widget-bd">
+    
+    <li>
+        <a href="/categories/Web%E6%8A%80%E6%9C%AF/">Web技术</a>
+        <span class="badge">(37)</span>
+    </li>
+    
+    <li>
+        <a href="/categories/%E7%94%9F%E6%B4%BB%E7%90%90%E4%BA%8B/">生活琐事</a>
+        <span class="badge">(3)</span>
+    </li>
+    
+    <li>
+        <a href="/categories/%E7%AE%97%E6%B3%95%E7%BB%83%E4%B9%A0/">算法练习</a>
+        <span class="badge">(31)</span>
+    </li>
+    
+</ul>
+    </section>
+
+    
+    <section class="widget">
+        <h3 class="widget-hd"><strong>热门标签</strong></h3>
+        <!-- 文章标签 -->
+<div class="widget-bd tag-wrap">
+  
+    <a class="tag-item" href="/tags/%E7%AE%97%E6%B3%95/" title="算法">算法 (32)</a>
+  
+    <a class="tag-item" href="/tags/LeetCode/" title="LeetCode">LeetCode (31)</a>
+  
+    <a class="tag-item" href="/tags/js/" title="js">js (5)</a>
+  
+    <a class="tag-item" href="/tags/Node-js/" title="Node.js">Node.js (5)</a>
+  
+    <a class="tag-item" href="/tags/npm/" title="npm">npm (4)</a>
+  
+    <a class="tag-item" href="/tags/Hexo/" title="Hexo">Hexo (3)</a>
+  
+    <a class="tag-item" href="/tags/%E5%89%8D%E7%AB%AF/" title="前端">前端 (3)</a>
+  
+    <a class="tag-item" href="/tags/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/" title="静态博客">静态博客 (2)</a>
+  
+    <a class="tag-item" href="/tags/%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83/" title="编码规范">编码规范 (2)</a>
+  
+    <a class="tag-item" href="/tags/Mac-OSX/" title="Mac OSX">Mac OSX (2)</a>
+  
+    <a class="tag-item" href="/tags/Mac/" title="Mac">Mac (2)</a>
+  
+    <a class="tag-item" href="/tags/gulp/" title="gulp">gulp (1)</a>
+  
+    <a class="tag-item" href="/tags/Electron/" title="Electron">Electron (1)</a>
+  
+    <a class="tag-item" href="/tags/%E6%9E%84%E5%BB%BA%E5%B7%A5%E5%85%B7/" title="构建工具">构建工具 (1)</a>
+  
+    <a class="tag-item" href="/tags/HTTPS/" title="HTTPS">HTTPS (1)</a>
+  
+    <a class="tag-item" href="/tags/vscode/" title="vscode">vscode (1)</a>
+  
+    <a class="tag-item" href="/tags/css/" title="css">css (1)</a>
+  
+    <a class="tag-item" href="/tags/eslint/" title="eslint">eslint (1)</a>
+  
+    <a class="tag-item" href="/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/" title="文件上传">文件上传 (1)</a>
+  
+    <a class="tag-item" href="/tags/content-type/" title="content-type">content-type (1)</a>
+  
+    <a class="tag-item" href="/tags/github-pages/" title="github pages">github pages (1)</a>
+  
+    <a class="tag-item" href="/tags/Github/" title="Github">Github (1)</a>
+  
+    <a class="tag-item" href="/tags/Git/" title="Git">Git (1)</a>
+  
+    <a class="tag-item" href="/tags/HTTP/" title="HTTP">HTTP (1)</a>
+  
+    <a class="tag-item" href="/tags/%E7%BD%91%E7%BB%9C%E7%8A%B6%E6%80%81%E7%A0%81/" title="网络状态码">网络状态码 (1)</a>
+  
+    <a class="tag-item" href="/tags/%E6%96%B0%E5%8D%9A%E5%AE%A2/" title="新博客">新博客 (1)</a>
+  
+    <a class="tag-item" href="/tags/jQuery/" title="jQuery">jQuery (1)</a>
+  
+    <a class="tag-item" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8%E9%AB%98%E5%BA%A6/" title="浏览器高度">浏览器高度 (1)</a>
+  
+    <a class="tag-item" href="/tags/js%E7%B1%BB%E5%9E%8B/" title="js类型">js类型 (1)</a>
+  
+    <a class="tag-item" href="/tags/%E9%9A%90%E5%BC%8F%E8%BD%AC%E6%8D%A2/" title="隐式转换">隐式转换 (1)</a>
+  
+    <a class="tag-item" href="/tags/%E5%91%BD%E4%BB%A4%E5%A4%A7%E5%85%A8/" title="命令大全">命令大全 (1)</a>
+  
+    <a class="tag-item" href="/tags/%E5%BC%80%E6%9C%BA%E5%8F%98%E6%85%A2/" title="开机变慢">开机变慢 (1)</a>
+  
+    <a class="tag-item" href="/tags/Mongoose/" title="Mongoose">Mongoose (1)</a>
+  
+    <a class="tag-item" href="/tags/MongoDB/" title="MongoDB">MongoDB (1)</a>
+  
+    <a class="tag-item" href="/tags/%E5%BC%80%E6%BA%90%E8%AE%B8%E5%8F%AF%E8%AF%81/" title="开源许可证">开源许可证 (1)</a>
+  
+    <a class="tag-item" href="/tags/node/" title="node">node (1)</a>
+  
+    <a class="tag-item" href="/tags/pnpm/" title="pnpm">pnpm (1)</a>
+  
+    <a class="tag-item" href="/tags/monorepo/" title="monorepo">monorepo (1)</a>
+  
+    <a class="tag-item" href="/tags/changesets/" title="changesets">changesets (1)</a>
+  
+</div>
+    </section>
+    
+
+    
+
+    
+    <!-- 友情链接 -->
+    <section class="widget">
+        <h3 class="widget-hd"><strong>友情链接</strong></h3>
+        <!-- 文章分类 -->
+<ul class="widget-bd">
+    
+        <li>
+            <a href="https://github.com/front-end-pigs/blog" target="_blank" title="Github博客">Github博客</a>
+        </li>
+    
+        <li>
+            <a href="https://github.com/jangdelong/blog_comments/issues" target="_blank" title="本站所有评论">本站所有评论</a>
+        </li>
+    
+</ul>
+    </section>
+    
+</aside>
+<!-- / 侧栏部分 -->
+    </div>
+
+    <!-- 博客底部 -->
+    <footer class="footer">
+    &copy;
+    
+        2014-2025
+    
+
+    <a href="/">Jelon Loves You</a>
+</footer>
+<div class="back-to-top" id="JELON__backToTop" title="返回顶部">返回顶部</div>
+
+    <!--博客js脚本 -->
+    <!-- 这里放网站js脚本 -->
+
+<script src="/js/main.js?v=1765082964742.js"></script>
+
+
+</body>
+</html>

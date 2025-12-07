@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" >
+    <meta http-equiv="X-UA-Compatible" content="IE=11,IE=10,IE=9,IE=8" >
+    <meta name="baidu-site-verification" content="dIcXMeY8Ya" />
+    
+    <title>React 核心原理与实现机制详解 | Jelon</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" >
+    <meta name="keywords" content="Jelon, 前端, Web, 张德龙, 前端开发" >
+    <meta name="description" content="Jelon个人前端小站" >
+
+    
+    <link rel="alternative" href="/atom.xml" title="Jelon" type="application/atom+xml" >
+    
+    
+    <link rel="icon" href="/favicon.ico" >
+    
+
+    
+    <link rel="apple-touch-icon" href="/favicon.png" >
+    
+    
+<link rel="stylesheet" href="/css/style.css?v=1765082964739.css">
+
+    <!--[if lt IE 9]>
+    
+<script src="/js/html5.js"></script>
+
+    <![endif]-->
+    
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src="https://hm.baidu.com/hm.js?944bc43c86d1058e06f95214cde1f8a6"
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="home">
+    <!--[if lt IE 9]>
+    <div class="browsehappy">
+        当前网页 <strong>不支持</strong>
+        你正在使用的浏览器. 为了正常的访问, 请 <a target="_blank" rel="noopener" href="http://browsehappy.com/">升级你的浏览器</a>.
+    </div>
+    <![endif]-->
+
+    <!-- 博客头部 -->
+    <header class="header">
+    <section class="container header-main">
+        <div class="logo">
+            <a href="/">
+                <div class="cover">
+                    <span class="name">JELON</span>
+                    <span class="description">个人博客小站</span>
+                </div>
+            </a>
+        </div>
+        <div class="dropnav iconfont icon-nav" id="JELON__btnDropNav"></div>
+        <ul class="menu hidden" id="JELON__menu">
+            
+            <li rel="/posts/basic-of-react/index/index.html" class="item ">
+                <a href="/" title="首页" class="iconfont icon-home">&nbsp;首页</a>
+            </li>
+            
+            <li rel="/posts/basic-of-react/index/index.html" class="item ">
+                <a href="/archives/" title="归档" class="iconfont icon-archives">&nbsp;归档</a>
+            </li>
+            
+            <li rel="/posts/basic-of-react/index/index.html" class="item ">
+                <a href="/about/" title="关于" class="iconfont icon-staff">&nbsp;关于</a>
+            </li>
+            
+            <li rel="/posts/basic-of-react/index/index.html" class="item ">
+                <a href="/comment/" title="留言" class="iconfont icon-comment">&nbsp;留言</a>
+            </li>
+            
+        </ul>
+        <div class="profile clearfix">
+            <div class="feeds fl">
+                
+                
+                <p class="links">
+                    
+                        <a href="https://github.com/jangdelong" target="_blank">Github</a>
+                        |
+                    
+                        <a href="https://app.netlify.com" target="_blank">Hosted by Netlify</a>
+                        
+                    
+                </p>
+                <p class="sns">
+                    
+                        <a href="http://weibo.com/jangdelong" class="sinaweibo" target="_blank"><b>■</b> 新浪微博</a>
+                    
+                        <a href="https://v.douyin.com/Ae2KxPd/" class="qqweibo" target="_blank"><b>■</b> 抖音</a>
+                    
+                    <a href="javascript: void(0);" class="wechat">
+                        <b>■</b>
+                        公众号
+                        <span class="popover">
+                            <img src="/img/wechat_mp.jpg" width="120" height="120" alt="我的微信订阅号">
+                            <i class="arrow"></i>
+                        </span>
+                    </a>
+                </p>
+                
+            </div>
+            <div class="avatar fr">
+                <img src="/img/jelon.jpg" alt="avatar" title="Jelon" >
+            </div>
+        </div>
+    </section>
+</header>
+
+
+    <!-- 博客正文 -->
+    <div class="container body clearfix">
+        <section class="content">
+            <div class="content-main widget">
+                <!-- 文章页 -->
+<!-- 文章 -->
+<article class="post article">
+    <header class="text-center">
+        <h3 class="post-title"><span>React 核心原理与实现机制详解</span></h3>
+    </header>
+    <p class="post-meta text-center">
+        Jelon 发表于
+        <time datetime="2025-11-11T00:00:00.000Z">2025-11-11</time>
+    </p>
+    <div id="JELON__articlePostContent" class="post-content">
+        <div class="toc">
+
+<!-- toc -->
+
+<ul>
+<li><a href="#1-%E8%99%9A%E6%8B%9Fdom-virtual-dom">1. <strong>虚拟DOM (Virtual DOM)</strong></a></li>
+<li><a href="#2-diffing%E7%AE%97%E6%B3%95%E5%8D%8F%E8%B0%83%E7%AE%97%E6%B3%95">2. <strong>Diffing算法（协调算法）</strong></a><ul>
+<li><a href="#%E6%AF%94%E8%BE%83%E7%AD%96%E7%95%A5">比较策略：</a></li>
+<li><a href="#diff%E8%A7%84%E5%88%99">Diff规则：</a></li>
+</ul>
+</li>
+<li><a href="#3-fiber%E6%9E%B6%E6%9E%84react-16">3. <strong>Fiber架构（React 16+）</strong></a><ul>
+<li><a href="#fiber%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5">Fiber核心概念：</a></li>
+</ul>
+</li>
+<li><a href="#4-%E6%B8%B2%E6%9F%93%E6%B5%81%E7%A8%8B">4. <strong>渲染流程</strong></a><ul>
+<li><a href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E6%B8%B2%E6%9F%93">初始化渲染：</a></li>
+<li><a href="#%E6%9B%B4%E6%96%B0%E8%BF%87%E7%A8%8B">更新过程：</a></li>
+</ul>
+</li>
+<li><a href="#5-hooks%E5%8E%9F%E7%90%86">5. <strong>Hooks原理</strong></a><ul>
+<li><a href="#hooks%E8%A7%84%E5%88%99">Hooks规则：</a></li>
+</ul>
+</li>
+<li><a href="#6-%E4%BA%8B%E4%BB%B6%E7%B3%BB%E7%BB%9F">6. <strong>事件系统</strong></a></li>
+<li><a href="#7-%E7%BB%84%E4%BB%B6%E6%9B%B4%E6%96%B0%E6%9C%BA%E5%88%B6">7. <strong>组件更新机制</strong></a><ul>
+<li><a href="#%E7%B1%BB%E7%BB%84%E4%BB%B6">类组件：</a></li>
+<li><a href="#%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6">函数组件：</a></li>
+</ul>
+</li>
+<li><a href="#8-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%8E%9F%E7%90%86">8. <strong>性能优化原理</strong></a><ul>
+<li><a href="#reactmemo">React.memo：</a></li>
+<li><a href="#usememousecallback">useMemo&#x2F;useCallback：</a></li>
+</ul>
+</li>
+<li><a href="#9-%E6%96%B0%E7%9A%84%E5%B9%B6%E5%8F%91%E7%89%B9%E6%80%A7react-18">9. <strong>新的并发特性（React 18+）</strong></a><ul>
+<li><a href="#concurrent-mode">Concurrent Mode：</a></li>
+</ul>
+</li>
+<li><a href="#10-%E6%A0%B8%E5%BF%83%E4%BC%98%E5%8A%BF">10. <strong>核心优势</strong></a></li>
+<li><a href="#11-%E6%B5%81%E7%A8%8B%E6%80%BB%E7%BB%93">11. 流程总结</a></li>
+</ul>
+<!-- tocstop -->
+
+</div>
+
+<p>React 的核心原理主要围绕以下几个方面：</p>
+<h2><span id="1-虚拟dom-virtual-dom">1. <strong>虚拟DOM (Virtual DOM)</strong></span></h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 虚拟DOM是一个JavaScript对象</span></span><br><span class="line"><span class="keyword">const</span> virtualDOM = &#123;</span><br><span class="line">  <span class="attr">type</span>: <span class="string">&#x27;div&#x27;</span>,</span><br><span class="line">  <span class="attr">props</span>: &#123;</span><br><span class="line">    <span class="attr">className</span>: <span class="string">&#x27;container&#x27;</span>,</span><br><span class="line">    <span class="attr">children</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">type</span>: <span class="string">&#x27;h1&#x27;</span>,</span><br><span class="line">        <span class="attr">props</span>: &#123; <span class="attr">children</span>: <span class="string">&#x27;Hello&#x27;</span> &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>工作原理：</strong></p>
+<ul>
+<li>React 创建虚拟DOM树（轻量级的JS对象）</li>
+<li>状态变化时，生成新的虚拟DOM树</li>
+<li>通过Diff算法比较新旧树的差异</li>
+<li>批量更新实际DOM（最小化操作）</li>
+</ul>
+<h2><span id="2-diffing算法协调算法">2. <strong>Diffing算法（协调算法）</strong></span></h2><p>React 使用 <strong>O(n)</strong> 复杂度的启发式算法：</p>
+<h3><span id="比较策略">比较策略：</span></h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 不同类型元素 → 完全重建</span></span><br><span class="line"><span class="keyword">if</span> (old.<span class="property">type</span> !== <span class="keyword">new</span>.<span class="property">type</span>) &#123;</span><br><span class="line">  <span class="comment">// 卸载旧组件，挂载新组件</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 相同类型元素 → 更新属性</span></span><br><span class="line"><span class="keyword">if</span> (old.<span class="property">type</span> === <span class="keyword">new</span>.<span class="property">type</span>) &#123;</span><br><span class="line">  <span class="comment">// 只更新变化的属性</span></span><br><span class="line">  <span class="title function_">updateProperties</span>(oldNode, newNode);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 列表元素使用key优化</span></span><br><span class="line">&lt;ul&gt;</span><br><span class="line">  <span class="language-xml"><span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">&quot;a&quot;</span>&gt;</span>A<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></span><br><span class="line">  <span class="language-xml"><span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">&quot;b&quot;</span>&gt;</span>B<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span></span><br><span class="line">&lt;/ul&gt;</span><br></pre></td></tr></table></figure>
+
+<h3><span id="diff规则">Diff规则：</span></h3><ol>
+<li><strong>同级比较</strong>：只比较同一层的节点</li>
+<li><strong>Key的重要性</strong>：帮助React识别元素的移动、添加、删除</li>
+<li><strong>类型不同则重建</strong>：元素类型改变，整个子树重建</li>
+</ol>
+<h2><span id="3-fiber架构react-16">3. <strong>Fiber架构（React 16+）</strong></span></h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Fiber节点结构</span></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">FiberNode</span> = &#123;</span><br><span class="line">  <span class="attr">type</span>: <span class="title class_">FunctionComponent</span> | <span class="title class_">ClassComponent</span> | <span class="title class_">HostComponent</span>,</span><br><span class="line">  <span class="attr">stateNode</span>: <span class="title class_">Component</span>实例 | <span class="variable constant_">DOM</span>节点,</span><br><span class="line">  <span class="attr">return</span>: 父<span class="title class_">Fiber</span>,</span><br><span class="line">  <span class="attr">child</span>: 第一个子<span class="title class_">Fiber</span>,</span><br><span class="line">  <span class="attr">sibling</span>: 兄弟<span class="title class_">Fiber</span>,</span><br><span class="line">  <span class="attr">alternate</span>: 上次渲染的<span class="title class_">Fiber</span>,</span><br><span class="line">  <span class="attr">effectTag</span>: 需要执行的副作用（<span class="variable constant_">PLACEMENT</span>, <span class="variable constant_">UPDATE</span>, <span class="variable constant_">DELETION</span>等）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3><span id="fiber核心概念">Fiber核心概念：</span></h3><ul>
+<li><strong>增量渲染</strong>：将渲染工作拆分成多个小任务</li>
+<li><strong>可中断</strong>：React可以暂停、恢复渲染</li>
+<li><strong>优先级调度</strong>：为不同类型的更新分配优先级</li>
+</ul>
+<h2><span id="4-渲染流程">4. <strong>渲染流程</strong></span></h2><h3><span id="初始化渲染">初始化渲染：</span></h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> <span class="variable constant_">JSX</span> → <span class="title class_">React</span>.<span class="title function_">createElement</span>() → 虚拟<span class="variable constant_">DOM</span>对象</span><br><span class="line"><span class="number">2.</span> 创建<span class="title class_">Fiber</span>树（协调阶段）</span><br><span class="line"><span class="number">3.</span> 计算<span class="variable constant_">DOM</span>更新（提交阶段）</span><br><span class="line"><span class="number">4.</span> 实际<span class="variable constant_">DOM</span>操作</span><br></pre></td></tr></table></figure>
+
+<h3><span id="更新过程">更新过程：</span></h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 触发更新</span></span><br><span class="line"><span class="title function_">setState</span>(newState);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 调度更新（Scheduler）</span></span><br><span class="line"><span class="title function_">requestIdleCallback</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="comment">// 在空闲时间执行</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3. 协调阶段（可中断）</span></span><br><span class="line"><span class="title function_">workLoop</span>(<span class="params">deadline</span>) &#123;</span><br><span class="line">  <span class="keyword">while</span> (有工作 &amp;&amp; 有空闲时间) &#123;</span><br><span class="line">    <span class="title function_">performUnitOfWork</span>(currentFiber);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 4. 提交阶段（不可中断）</span></span><br><span class="line"><span class="title function_">commitRoot</span>();</span><br></pre></td></tr></table></figure>
+
+<h2><span id="5-hooks原理">5. <strong>Hooks原理</strong></span></h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> hookIndex = <span class="number">0</span>;  <span class="comment">// 当前hook索引</span></span><br><span class="line"><span class="keyword">let</span> workInProgressHook = <span class="literal">null</span>;  <span class="comment">// 当前处理的hook</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">useState</span>(<span class="params">initialState</span>) &#123;</span><br><span class="line">  <span class="comment">// 获取当前hook</span></span><br><span class="line">  <span class="keyword">const</span> hook = &#123;</span><br><span class="line">    <span class="attr">memoizedState</span>: initialState,</span><br><span class="line">    <span class="attr">queue</span>: [],  <span class="comment">// 更新队列</span></span><br><span class="line">    <span class="attr">next</span>: <span class="literal">null</span>  <span class="comment">// 下一个hook</span></span><br><span class="line">  &#125;;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 返回[状态, 更新函数]</span></span><br><span class="line">  <span class="keyword">return</span> [hook.<span class="property">memoizedState</span>, dispatchAction];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">dispatchAction</span>(<span class="params">queue, action</span>) &#123;</span><br><span class="line">  <span class="comment">// 创建更新对象</span></span><br><span class="line">  <span class="keyword">const</span> update = &#123; action, <span class="attr">next</span>: <span class="literal">null</span> &#125;;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 将更新加入队列</span></span><br><span class="line">  <span class="comment">// 调度重新渲染</span></span><br><span class="line">  <span class="title function_">scheduleUpdate</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3><span id="hooks规则">Hooks规则：</span></h3><ul>
+<li>只能在函数组件顶层调用</li>
+<li>Hook调用顺序必须稳定（基于链表实现）</li>
+<li>每个Hook有独立的内存单元</li>
+</ul>
+<h2><span id="6-事件系统">6. <strong>事件系统</strong></span></h2><p>React使用<strong>合成事件</strong>（SyntheticEvent）：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 事件委托</span></span><br><span class="line"><span class="variable language_">document</span>.<span class="title function_">addEventListener</span>(<span class="string">&#x27;click&#x27;</span>, dispatchEvent);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 合成事件池</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">SyntheticEvent</span>(<span class="params">nativeEvent</span>) &#123;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">nativeEvent</span> = nativeEvent;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">currentTarget</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="comment">// ... 其他属性</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 自动回收（React 17前）</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="title function_">persist</span>(); <span class="comment">// 阻止自动回收</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2><span id="7-组件更新机制">7. <strong>组件更新机制</strong></span></h2><h3><span id="类组件">类组件：</span></h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">  <span class="title function_">setState</span>(<span class="params">partialState, callback</span>) &#123;</span><br><span class="line">    <span class="comment">// 1. 将更新加入队列</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">updater</span>.<span class="title function_">enqueueSetState</span>(<span class="variable language_">this</span>, partialState, callback);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 调度更新</span></span><br><span class="line">    <span class="title function_">scheduleUpdate</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 生命周期</span></span><br><span class="line">  <span class="title function_">shouldComponentUpdate</span>(<span class="params">nextProps, nextState</span>) &#123;</span><br><span class="line">    <span class="comment">// 决定是否更新</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3><span id="函数组件">函数组件：</span></h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">MyComponent</span>(<span class="params">props</span>) &#123;</span><br><span class="line">  <span class="comment">// 每次渲染都会调用整个函数</span></span><br><span class="line">  <span class="keyword">const</span> [state, setState] = <span class="title function_">useState</span>();</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// useEffect处理副作用</span></span><br><span class="line">  <span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 副作用代码</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// 清理函数</span></span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;, [dependencies]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2><span id="8-性能优化原理">8. <strong>性能优化原理</strong></span></h2><h3><span id="reactmemo">React.memo：</span></h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">MemoComponent</span> = <span class="title class_">React</span>.<span class="title function_">memo</span>(</span><br><span class="line">  <span class="title class_">MyComponent</span>,</span><br><span class="line">  <span class="function">(<span class="params">prevProps, nextProps</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 自定义比较逻辑</span></span><br><span class="line">    <span class="keyword">return</span> prevProps.<span class="property">id</span> === nextProps.<span class="property">id</span>;</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h3><span id="usememox2fusecallback">useMemo&#x2F;useCallback：</span></h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> memoizedValue = <span class="title function_">useMemo</span>(</span><br><span class="line">  <span class="function">() =&gt;</span> <span class="title function_">computeExpensiveValue</span>(a, b),</span><br><span class="line">  [a, b]  <span class="comment">// 依赖数组</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> memoizedCallback = <span class="title function_">useCallback</span>(</span><br><span class="line">  <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">doSomething</span>(a, b);</span><br><span class="line">  &#125;,</span><br><span class="line">  [a, b]</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h2><span id="9-新的并发特性react-18">9. <strong>新的并发特性（React 18+）</strong></span></h2><h3><span id="concurrent-mode">Concurrent Mode：</span></h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 可中断的渲染</span></span><br><span class="line"><span class="keyword">const</span> root = <span class="title class_">ReactDOM</span>.<span class="title function_">createRoot</span>(container);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 过渡更新（低优先级）</span></span><br><span class="line"><span class="title function_">startTransition</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="title function_">setState</span>(newState);  <span class="comment">// 不紧急的更新</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 延迟值</span></span><br><span class="line"><span class="keyword">const</span> deferredValue = <span class="title function_">useDeferredValue</span>(value);</span><br></pre></td></tr></table></figure>
+
+<h2><span id="10-核心优势">10. <strong>核心优势</strong></span></h2><ol>
+<li><strong>声明式编程</strong>：描述UI应该是什么样子</li>
+<li><strong>组件化</strong>：高内聚、低耦合</li>
+<li><strong>一次学习，随处编写</strong>：React Native、React VR</li>
+<li><strong>强大的生态系统</strong></li>
+</ol>
+<p>理解这些原理有助于：</p>
+<ul>
+<li>编写更高效的代码</li>
+<li>更好的性能优化</li>
+<li>避免常见错误</li>
+<li>理解React生态系统中的其他库</li>
+</ul>
+<h2><span id="11-流程总结">11. 流程总结</span></h2><p><img src="https://jangdelong.github.io/blog_img/images/basic-of-react/1.svg" alt="react 渲染流程"></p>
+
+    </div>
+    <p class="eof">-- EOF --</p>
+    <p class="post-meta">
+        <span class="post-cat">分类：
+            <a class="cat-link" href="/categories/Web%E6%8A%80%E6%9C%AF/">Web技术</a>
+        </span>
+        <span class="post-tags">
+            标签：
+            
+    
+        <a href="/tags/js/" title="js">js</a> / 
+    
+        <a href="/tags/React/" title="React">React</a>
+    
+
+        </span>
+    </p>
+</article>
+<!-- 分享按钮 -->
+
+  <div class="article-share clearfix text-center">
+    <div class="share-area">
+      <span class="share-txt">分享到：</span>
+      <a href="javascript: window.open('http://service.weibo.com/share/share.php?url=' + encodeURIComponent(location.href) + '&title=' + document.title + '&language=zh_cn');" class="share-icon weibo"></a>
+      <a href="javascript: alert('请复制链接到微信并发送');" class="share-icon wechat"></a>
+      <a href="javascript: window.open('http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=' + encodeURIComponent(location.href) + '&title=' + document.title);" class="share-icon qqzone"></a>
+      <a href="javascript: window.open('http://connect.qq.com/widget/shareqq/index.html?url=' + encodeURIComponent(location.href) + '&desc=Jelon个人博客&title=' + document.title + '&callback=' + encodeURIComponent(location.href));" class="share-icon qq"></a>
+      <a href="javascript: window.open('http://shuo.douban.com/!service/share?href=' + encodeURIComponent(location.href) + '&name=' + document.title + '&text=' + document.title);" class="share-icon douban"></a>
+    </div>
+  </div>
+
+
+<!-- 上一篇/下一篇 -->
+
+<div class="article-nav clearfix">
+    
+    <span class="prev fl">
+        上一篇<br >
+        <a href="javascript: void(0);">没有上一篇了</a>
+    </span>
+    
+
+    
+    <span class="next fr">
+        下一篇<br >
+        <a href="/posts/pnpm-workspace-changesets/">
+            
+                为什么使用 pnpm + workspace + changesets 替代 yarn + lerna 构建我们组件库
+            
+        </a>
+    </span>
+    
+</div>
+
+<!-- 文章评论 -->
+
+  
+<script src="/js/comment.js?v=1765082964446.js"></script>
+
+  <div id="comments" class="comment">
+    <!--
+    <div class="sign-bar">
+      GitHub 已登录!
+      <span class="sign-link">登出</span>
+    </div>
+    <section class="box">
+      <div class="com-avatar"><img src="/img/jelon.jpg" alt="avatar"></div>
+      <div class="com-text">
+        <div class="main">
+          <textarea class="text-area-edited show" placeholder="欢迎评论！"></textarea>
+          <div class="text-area-preview"></div>
+        </div>
+        <div class="switch">
+          <div class="switch-item on">编辑</div>
+          <div class="switch-item">预览</div>
+        </div>
+        <div class="button">提交</div>
+      </div>
+    </section>
+    <section class="tips">注：评论支持 markdown 语法！</section>
+    <section class="list-wrap">
+      <ul class="list">
+        <li>
+          <div class="user-avatar">
+            <a href="/">
+              <img src="/img/jelon.jpg" alt="user-avatar">
+            </a>
+          </div>
+          <div class="user-comment">
+            <div class="user-comment-header">
+              <span class="post-name">张德龙</span>
+              <span class="post-time">2017年12月12日</span>
+              <span class="like liked">已赞</span>
+              <span class="like-num">2</span>
+            </div>
+            <div class="user-comment-body">333333</div>
+          </div>
+        </li>
+        <li>
+          <div class="user-avatar">
+            <a href="/">
+              <img src="/img/jelon.jpg" alt="user-avatar">
+            </a>
+          </div>
+          <div class="user-comment">
+            <div class="user-comment-header">
+              <span class="post-name">刘德华</span>
+              <span class="post-time">2017年12月12日</span>
+              <span class="like">点赞</span>
+              <span class="like-num">2</span>
+            </div>
+            <div class="user-comment-body">vvvvv</div>
+          </div>
+        </li>
+      </ul>
+      <div class="page-nav">
+        <a href="javascript: void(0);" class="item">1</a>
+        <a href="javascript: void(0);" class="item">2</a>
+        <a href="javascript: void(0);" class="item current">3</a>
+      </div>
+    </section>
+    -->
+  </div>
+  <script>
+  JELON.Comment({
+    container: 'comments',
+    label: 'basic-of-react/index' || 'posts/basic-of-react/index/',
+    owner: 'jangdelong',
+    repo: 'blog_comments',
+    clientId: 'b08ed25e52c57993e69c',
+    clientSecret: 'd18eaf1eb957ba610f01ddf95d732dd9d94b770c'
+  });
+  </script>
+
+
+
+            </div>
+        </section>
+        <!-- 侧栏部分 -->
+<aside class="sidebar">
+    
+    <section class="widget">
+        <h3 class="widget-hd"><strong>文章搜索</strong></h3>
+        <div class="search-form">
+  <form
+    id="searchForm"
+    method="GET"
+    action="https://www.baidu.com/s"
+    ectype="application/x-www-form-urlencoded"
+    target="_blank"
+    autocomplete="false"
+    onsubmit="javascript: return false;">
+    <input
+      id="searchKeyword"
+      type="text"
+      class="form-control"
+      placeholder="输入关键字搜索"
+      autocomplete="off"
+    />
+    <input id="searchKeywordHidden" type="hidden" name="wd" />
+    <input id="searchButton" class="btn" type="submit" value="搜索" />
+  </form>
+  <div id="searchResultBox" class="search-result-box">
+    <header class="search-result-head">搜索结果 <span class="search-result-total" id="searchResultTotal"></span></header>
+    <div class="search-result-main">
+      <ul id="searchResultList" class="search-result-list">
+        <!--
+        <li class="search-result-item">
+          <a href="#" class="search-result-item-title">这是搜索结果标题</a>
+          <p class="search-result-item-desc">这是搜索结果详情</p>
+        </li>
+        -->
+      </ul>
+    </div>
+  </div>
+</div>
+    </section>
+    
+
+    <section class="widget">
+        <h3 class="widget-hd"><strong>文章分类</strong></h3>
+        <!-- 文章分类 -->
+<ul class="widget-bd">
+    
+    <li>
+        <a href="/categories/Web%E6%8A%80%E6%9C%AF/">Web技术</a>
+        <span class="badge">(37)</span>
+    </li>
+    
+    <li>
+        <a href="/categories/%E7%94%9F%E6%B4%BB%E7%90%90%E4%BA%8B/">生活琐事</a>
+        <span class="badge">(3)</span>
+    </li>
+    
+    <li>
+        <a href="/categories/%E7%AE%97%E6%B3%95%E7%BB%83%E4%B9%A0/">算法练习</a>
+        <span class="badge">(31)</span>
+    </li>
+    
+</ul>
+    </section>
+
+    
+    <section class="widget">
+        <h3 class="widget-hd"><strong>热门标签</strong></h3>
+        <!-- 文章标签 -->
+<div class="widget-bd tag-wrap">
+  
+    <a class="tag-item" href="/tags/%E7%AE%97%E6%B3%95/" title="算法">算法 (32)</a>
+  
+    <a class="tag-item" href="/tags/LeetCode/" title="LeetCode">LeetCode (31)</a>
+  
+    <a class="tag-item" href="/tags/js/" title="js">js (5)</a>
+  
+    <a class="tag-item" href="/tags/Node-js/" title="Node.js">Node.js (5)</a>
+  
+    <a class="tag-item" href="/tags/npm/" title="npm">npm (4)</a>
+  
+    <a class="tag-item" href="/tags/Hexo/" title="Hexo">Hexo (3)</a>
+  
+    <a class="tag-item" href="/tags/%E5%89%8D%E7%AB%AF/" title="前端">前端 (3)</a>
+  
+    <a class="tag-item" href="/tags/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/" title="静态博客">静态博客 (2)</a>
+  
+    <a class="tag-item" href="/tags/%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83/" title="编码规范">编码规范 (2)</a>
+  
+    <a class="tag-item" href="/tags/Mac-OSX/" title="Mac OSX">Mac OSX (2)</a>
+  
+    <a class="tag-item" href="/tags/Mac/" title="Mac">Mac (2)</a>
+  
+    <a class="tag-item" href="/tags/gulp/" title="gulp">gulp (1)</a>
+  
+    <a class="tag-item" href="/tags/Electron/" title="Electron">Electron (1)</a>
+  
+    <a class="tag-item" href="/tags/%E6%9E%84%E5%BB%BA%E5%B7%A5%E5%85%B7/" title="构建工具">构建工具 (1)</a>
+  
+    <a class="tag-item" href="/tags/HTTPS/" title="HTTPS">HTTPS (1)</a>
+  
+    <a class="tag-item" href="/tags/vscode/" title="vscode">vscode (1)</a>
+  
+    <a class="tag-item" href="/tags/css/" title="css">css (1)</a>
+  
+    <a class="tag-item" href="/tags/eslint/" title="eslint">eslint (1)</a>
+  
+    <a class="tag-item" href="/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/" title="文件上传">文件上传 (1)</a>
+  
+    <a class="tag-item" href="/tags/content-type/" title="content-type">content-type (1)</a>
+  
+    <a class="tag-item" href="/tags/github-pages/" title="github pages">github pages (1)</a>
+  
+    <a class="tag-item" href="/tags/Github/" title="Github">Github (1)</a>
+  
+    <a class="tag-item" href="/tags/Git/" title="Git">Git (1)</a>
+  
+    <a class="tag-item" href="/tags/HTTP/" title="HTTP">HTTP (1)</a>
+  
+    <a class="tag-item" href="/tags/%E7%BD%91%E7%BB%9C%E7%8A%B6%E6%80%81%E7%A0%81/" title="网络状态码">网络状态码 (1)</a>
+  
+    <a class="tag-item" href="/tags/%E6%96%B0%E5%8D%9A%E5%AE%A2/" title="新博客">新博客 (1)</a>
+  
+    <a class="tag-item" href="/tags/jQuery/" title="jQuery">jQuery (1)</a>
+  
+    <a class="tag-item" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8%E9%AB%98%E5%BA%A6/" title="浏览器高度">浏览器高度 (1)</a>
+  
+    <a class="tag-item" href="/tags/js%E7%B1%BB%E5%9E%8B/" title="js类型">js类型 (1)</a>
+  
+    <a class="tag-item" href="/tags/%E9%9A%90%E5%BC%8F%E8%BD%AC%E6%8D%A2/" title="隐式转换">隐式转换 (1)</a>
+  
+    <a class="tag-item" href="/tags/%E5%91%BD%E4%BB%A4%E5%A4%A7%E5%85%A8/" title="命令大全">命令大全 (1)</a>
+  
+    <a class="tag-item" href="/tags/%E5%BC%80%E6%9C%BA%E5%8F%98%E6%85%A2/" title="开机变慢">开机变慢 (1)</a>
+  
+    <a class="tag-item" href="/tags/Mongoose/" title="Mongoose">Mongoose (1)</a>
+  
+    <a class="tag-item" href="/tags/MongoDB/" title="MongoDB">MongoDB (1)</a>
+  
+    <a class="tag-item" href="/tags/%E5%BC%80%E6%BA%90%E8%AE%B8%E5%8F%AF%E8%AF%81/" title="开源许可证">开源许可证 (1)</a>
+  
+    <a class="tag-item" href="/tags/node/" title="node">node (1)</a>
+  
+    <a class="tag-item" href="/tags/pnpm/" title="pnpm">pnpm (1)</a>
+  
+    <a class="tag-item" href="/tags/monorepo/" title="monorepo">monorepo (1)</a>
+  
+    <a class="tag-item" href="/tags/changesets/" title="changesets">changesets (1)</a>
+  
+</div>
+    </section>
+    
+
+    
+
+    
+    <!-- 友情链接 -->
+    <section class="widget">
+        <h3 class="widget-hd"><strong>友情链接</strong></h3>
+        <!-- 文章分类 -->
+<ul class="widget-bd">
+    
+        <li>
+            <a href="https://github.com/front-end-pigs/blog" target="_blank" title="Github博客">Github博客</a>
+        </li>
+    
+        <li>
+            <a href="https://github.com/jangdelong/blog_comments/issues" target="_blank" title="本站所有评论">本站所有评论</a>
+        </li>
+    
+</ul>
+    </section>
+    
+</aside>
+<!-- / 侧栏部分 -->
+    </div>
+
+    <!-- 博客底部 -->
+    <footer class="footer">
+    &copy;
+    
+        2014-2025
+    
+
+    <a href="/">Jelon Loves You</a>
+</footer>
+<div class="back-to-top" id="JELON__backToTop" title="返回顶部">返回顶部</div>
+
+    <!--博客js脚本 -->
+    <!-- 这里放网站js脚本 -->
+
+<script src="/js/main.js?v=1765082964741.js"></script>
+
+
+</body>
+</html>
